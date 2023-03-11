@@ -1,13 +1,13 @@
 # NGEC
 # New Generation Event Coder 
 
-This repo holds files related to the paper 
+This repo holds a few files related to the paper 
 
 Halterman, Andrew, Philip A. Schrodt, Andreas Beger, Benjamin E. Bagozzi and Grace I.
 Scarborough. 2023. “Creating Custom Event Data Without Dictionaries: A Bag-of-Tricks.”
 Working Paper presented at the International Studies Association, Montreal, March-2023.
 
-At present, and likely well into the future, this site will mostly contain some utility file useful in for reducing typing and typos, and a few code fragments, largely from the Huggingface and sklearn documentation with slight modifications, which clarify exactly what we mean by ``default'' paramters and technique. The complete data-generation pipeline is actually at Leidos and probably the U.S. government—which remains disinclined to share[^1]—holds the intellectual property rights to this, that issue yet to be decided by legions of Gucci-shod lawyers, so it isn't here.
+At present, and likely well into the future, this site will mostly contain some utility files useful in for reducing typing and typos, and a few code fragments, largely from the `Huggingface` and `sklearn` documentation with slight modifications, these clarifying exactly what we mean by ``default'' paramters and techniques. The complete data-generation pipeline is at Leidos and probably the U.S. government—which remains disinclined to share[^1]—holds the intellectual property rights to this, that issue yet to be decided by legions of Gucci-shod lawyers, so it isn't here.
 
 Which is say, there's not a turn-key system here. But the remaining code in the operational pipeline is the routine stuff of, well, operational pipelines, so if you know enough to be creating an event data pipeline, you know enough to write that sort of code, and will almost certainly be better off writing it using whatever idiomatic style you are comfortable with rather than adapting to ours. Or rather, mine [^2]
 
@@ -23,6 +23,10 @@ CAMEO to PLOVER conversion files: per the embedded date, may need a bit of updat
 ## code_fragment_for_CAMEO_conversion.txt
 
 Code fragments for reading and using these files to get the PLOVER equivalent of a CAMEO code
+
+## code_fragments_for_NGEC_classification.txt
+
+Currently just a placeholder but this will be filled out
 
 ## PLOVER_lists.txt
 
