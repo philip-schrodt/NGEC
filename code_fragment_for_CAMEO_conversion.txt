@@ -1,0 +1,48 @@
+def init_CAMEO():
+    CAMEO_eventcodes = {}   # conversion dictionaries
+    
+    try: 
+        fin = open("CAMEO_codefile.txt",'r') 
+    except IOError:
+        print("\aError: Could not find the event code file CAMEO_codefile.txt")
+        exit()	
+
+    caseno = 1
+    line = fin.readline()
+    while len(line) > 0:
+        if line.startswith('LABEL'):
+            part = line[line.find(' ')+1:].partition(' ')
+            CAMEO_eventcodes[part[2][:-1]] = part[0][:-1]
+    #		print CAMEO_eventcodes[part[2][:-1]]
+            caseno += 1
+    #	if caseno > 32: break   # debugging exit 		
+        line = fin.readline()
+    return CAMEO_eventcodes
+
+
+CAMEO_convert = init_CAMEO()
+
+xlate = {}
+for line in open("CAMEO2PLOVER-2021-09-17.txt", "r"):
+    if line[0] == '#':
+        continue
+    if "#" in line:
+        f1 = line.partition(":")
+        f2 = f1[2].split(",")
+        mode = f2[1].strip()
+        if not mode:
+            mode = "None"
+        context = f2[2][:f2[2].find("#")].strip()
+        if not context:
+            context = "None"
+        xlate[f1[0].strip()] = [f2[0].strip(), mode, context]
+
+# Example of usage: this was processing an ICEWS file that had been converted to JSON 
+# where EVENT_KEY held the text of the event
+
+if rec[EVENT_KEY] in CAMEO_convert:
+    camcode = CAMEO_convert[rec[EVENT_KEY]]
+    if camcode in xlate:
+        evntcode[xlate[camcode][0]] += 1
+        modecode[xlate[camcode][1]] += 1
+        cntxcode[xlate[camcode][2]] += 1
