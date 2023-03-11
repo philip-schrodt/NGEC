@@ -1,0 +1,73 @@
+"""
+Assorted useful Python-formated lists including PLOVER categories, 4-character category abbreviations, and contexts.
+
+PLOVERLIST      PLOVER event categories
+
+CONTEXTLIST     PLOVER context categories
+
+MODEDICT        PLOVER mode lists indexed by event category
+
+PLOV2FOUR       Table translating PLOVER event categories to 4-character codes
+
+FOUR2PLOV       Reverse of above
+
+INTENSITY       "Intensity scores" from data dictionary version 1.1: these were calibrated on the basis of the frequency of CAMEO subcategories in
+                a sample of ICEWS data to produced aggregate values comparable to those of the ICEWS CAMEO "Goldstein" scores
+
+Report bugs to: schrodt735@gmail.com
+
+REVISION HISTORY:
+09-Nov-2021:	Initial version
+03-Mar-2022:  Added intensity scores from data dictionary version 1.1
+"""
+
+PLOVERLIST = ["AGREE", "CONSULT", "SUPPORT", "CONCEDE", "COOPERATE", "AID", "RETREAT", "REQUEST",
+              "ACCUSE", "REJECT", "THREATEN", "PROTEST", "SANCTION", "MOBILIZE", "COERCE", "ASSAULT"]
+
+CONTEXTLIST = ["asylum", "economic", "cyber", "disasters", "repression", "misinformation", "human_security", 
+                "pro_democracy", "pro_autocracy", "political_institutions", "legislative", "intelligence", "inequality",  
+                "terrorism", "environment", "corruption", "diplomatic", "religion_ethnicity", "legal", "military", 
+                "health", "illegal_drugs", "lgbt", "migration", "election", "reparations", "peacekeeping", "human_rights", 
+                "rights_freedoms", "gender", "crime", "technology", "natural_resource", "territory"] #  
+
+MODEDICT = {"ACCUSE": ["disapprove","investigate","allege"],
+            "ASSAULT": ["abduct","beat","torture","execute","sexual","assassinate","destroy","primitive","firearms","explosives",
+                        "suicide-attack","heavy-weapons","crowd-control","cleansing","massacre","unconventional"],
+            "COERCE": ["seize","restrict","ban","censor","curfew","martial-law","arrest","deport","withold","misinformation"],
+            "CONSULT": ["visit","third-party","multilateral","phone"],
+            "MOBILIZE": ["troops","weapons","police","militia"],
+            "PROTEST": ["demo","riot","general","strike","hunger","boycott","obstruct"],
+            "REJECT": ["assist","change","yield","meet"],
+            "REQUEST": ["assist","change","yield","meet"],
+            "RETREAT": ["withdraw","release","return","disarm","ceasefire","access","resign"],
+            "SANCTION": ["convict","expel","withdraw","discontinue"],
+            "THREATEN": ["restrict","ban","arrest","relations","expel","territory","violence"]
+            }
+
+PLOV2FOUR = {"AGREE": "AGRE", "CONSULT": "CONS", "SUPPORT": "SUPP", "CONCEDE": "CONC", "COOPERATE": "COOP", "AID": "AAID",  
+             "RETREAT": "RETR", "REQUEST": "REQS", "ACCUSE": "ACCS", "REJECT": "REJT", "THREATEN": "THRT", "PROTEST": "PROT",  
+             "SANCTION": "SANC", "MOBILIZE": "MOBL", "COERCE": "COER", "ASSAULT": "ASLT"}  # PLOVER 4-character category abbreviations
+
+FOUR2PLOV = {"AGRE": "AGREE",  "CONS": "CONSULT",  "SUPP": "SUPPORT",  "CONC": "CONCEDE",  "COOP": "COOPERATE",  "AAID": "AID",   
+             "RETR": "RETREAT",  "REQS": "REQUEST",  "ACCS": "ACCUSE",  "REJT": "REJECT",  "THRT": "THREATEN",  "PROT": "PROTEST",   
+             "SANC": "SANCTION",  "MOBL": "MOBILIZE",  "COER": "COERCE",  "ASSAULT": "ASLT"}  # PLOVER 4-character reverse index
+             
+INTENSITY = {
+            "ASSAULT": -9.3,
+            "COERCE": -7.2,
+            "PROTEST": -6.6,
+            "MOBILIZE": -5.3,
+            "SANCTION": -5.2,
+            "THREATEN": -5.1,
+            "REQUEST": -5.0,
+            "REJECT": -4.2,
+            "ACCUSE": -2.0
+            "CONSULT": +2.1,
+            "AGREE": +4.2,
+            "SUPPORT": +4.6,
+            "CONCEDE": +5.0,
+            "COOPERATE": +6.8,
+            "AID": +7.4,
+            "RETREAT": +7.6
+            }
+
