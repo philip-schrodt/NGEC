@@ -9,8 +9,148 @@ Working paper presented at the International Studies Association, Montreal, Marc
 Last updateL 12-Mar-2023
 Contact: schrodt735@gmail.com
 
+
 ========================================================================================
 # Transformer classifiers for event categories
+
+# This code is run in a Jupyter notebook in the Google Colaboratory environment in order
+# to use a GPU, though if you are really patient it can be done on a regular desktop
+# without a GPU
+
+from transformers import DistilBertForSequenceClassification, Trainer, TrainingArguments, DistilBertTokenizerFast
+from sklearn.model_selection import train_test_split
+import numpy as np
+from datasets import load_metric
+import datetime
+import torch
+import json
+import sys
+import os
+
+
+class ICEWSDataset(torch.utils.data.Dataset):
+''' This is required by transformers and just implements their example code '''
+    def __init__(self, encodings, labels):
+        self.encodings = encodings
+        self.labels = labels
+
+    def __getitem__(self, idx):
+        item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+        item['labels'] = torch.tensor(self.labels[idx])
+        return item
+
+    def __len__(self):
+        return len(self.labels) 
+        
+training_args = TrainingArguments(
+    output_dir='./results',          # output directory
+    num_train_epochs=3,              # total number of training epochs
+    per_device_train_batch_size=16,  # batch size per device during training
+    per_device_eval_batch_size=64,   # batch size for evaluation
+    warmup_steps=500,                # number of warmup steps for learning rate scheduler
+    weight_decay=0.01,               # strength of weight decay
+    logging_dir='./logs',            # directory for storing logs
+    logging_steps=10,
+    evaluation_strategy="epoch"
+)
+
+model = DistilBertForSequenceClassification.from_pretrained("distilbert-base-uncased")
+
+metric = load_metric("accuracy")
+
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    predictions = np.argmax(logits, axis=-1)
+    return metric.compute(predictions=predictions, references=labels)
+
+tokenizer = DistilBertTokenizerFast.from_pretrained('distilbert-base-uncased')
+
+gpu_avail = torch.cuda.is_available()
+print(f"Is the GPU available? {gpu_avail}")
+
+# the magic one line where we bring in the GPU...
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu") 
+     
+# cattimestamp() is a utility function that generates a time-stamp
+
+# the following is embedded in two loops, one going through all of the PLOVER categories,
+# indexed as CATTARG, and the other doing multiple estimated models, indexed on NEX
+
+texts, labels, ids = [], [], []
+
+fout = open(os.path.join(SAVEMODELDIR,"HF_Annot" + INFIX + cattimestamp()), "w")
+infostrg = "Program: " + sys.argv[0] + "\n"  + "Start time: " + cattimestamp()[1:-4]  + "\n"
+infostrg += "Iteration: " + str(NEXP) + "\n"
+infostrg += "TRAININGDIR:  " + TRAININGDIR + "\n"
+fout.write(infostrg + "\n")
+
+fout.write("Eval Acc   ")
+fout.write("  Test N    Test Acc  Precision  Recall      F1       Timestamp\n")
+fout.write("\n")
+
+for line in open(os.path.join(TRAININGDIR, "Annot_training_" + CATTARG + "_fill" + FILLSTR + ".jsonl"), "r"): # standardized input file name...
+    rec =  json.loads(line[:-1])
+    texts.append(rec["text"])  # texts here were already pre-processed....
+    ids.append(rec["id"])
+    labels.append(1 if rec["plevent"] == CATTARG else 0)     # CATTARG is the PLOVER category we're estimating the model for           
+
+train_texts, val_texts, train_labels, val_labels, train_ids, val_ids = train_test_split(texts, labels, ids, test_size=.2)
+fout.write(f"Train size:{len(train_texts):6d}   Eval size:{len(val_texts):6d}\n")
+
+train_encodings = tokenizer(train_texts, truncation=True, padding=True)
+val_encodings = tokenizer(val_texts, truncation=True, padding=True)
+
+train_dataset = ICEWSDataset(train_encodings, train_labels)
+val_dataset = ICEWSDataset(val_encodings, val_labels)
+
+trainer = Trainer(
+    model=model,                         # the instantiated 🤗 Transformers model to be trained
+    args=training_args,                  # training arguments, defined above
+    train_dataset=train_dataset,         # training dataset
+    eval_dataset=val_dataset,             # evaluation dataset
+    compute_metrics=compute_metrics,
+)
+
+trainer.train()
+
+metriks = trainer.evaluate(eval_dataset=val_dataset)
+fout.write("  {:6.4f}".format(metriks['eval_accuracy']))
+
+modeldir = os.path.join(SAVEMODELDIR,"HFmodel_4th_" + CATTARG + cattimestamp()[:-4]) # save the model
+trainer.save_model(modeldir)
+
+fout.write("\n")
+
+pred = trainer.predict(val_dataset)
+npred = len(val_texts)
+
+# now compute and write the accuracy metrics; there might be a simpler way to do this using numpy or sklearn
+
+ncorr, nTP, nFP, nFN = 0, 1, 0, 0  # nTP = 1 is a cheap trick to avoid div-by-0 (which can happen with screwy low-N models)
+for ka in range(len(pred[0])):
+    prcl = 0 if pred[0][ka][0] > pred[0][ka][1] else 1
+    if pred[1][ka] == prcl:
+        ncorr += 1
+        if prcl == 1:
+            nTP += 1
+    else:
+        if prcl == 1:
+            nFP += 1
+        else:
+            nFN += 1
+
+acc = ncorr/npred
+fout.write("{:9d}        {:6.4f}".format(npred, acc))
+fout.write(" {:8.4f}  {:8.4f}  {:8.4f}    ".format(nTP/(nTP + nFP), nTP/(nTP + nFN), nTP/(nTP + 0.5*(nFP + nFN))))
+
+with open(os.path.join(modeldir, "HFmodel_stats.txt"), "w") as ftmp:
+  ftmp.write("Training metrics for " + modeldir  + "\n")
+  ftmp.write("Category: {:10s}\n".format(CATTARG) + "Test size: " + str(npred) + "\nCorrect: {:5d}\n".format(ncorr))
+  ftmp.write("Accuracy: {:6.2f}%\n".format(ncorr*100.0/npred) + "Precision: {:6.2f}%\n".format(nTP*100.0/(nTP + nFP)))
+  ftmp.write("Recall: {:6.2f}%\n".format(nTP*100.0/(nTP + nFN)))
+  ftmp.write("\n" + infostrg + "\n")
+
+fout.close()  
 
 
 ========================================================================================
@@ -31,6 +171,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
 import numpy as np
+import json
+import sys
+import os
+
 
 for line in open(os.path.join(AUXDIR, pargs.d, MODEPREFIX + catmode + ".json"), "r"): # standardized names for the training sets
     rec =  json.loads(line[:-1])
