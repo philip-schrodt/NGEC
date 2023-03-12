@@ -12,7 +12,8 @@ PLOV2FOUR       Table translating PLOVER event categories to 4-character codes
 FOUR2PLOV       Reverse of above
 
 INTENSITY       "Intensity scores" from data dictionary version 1.1: these were calibrated on the basis of the frequency of CAMEO subcategories in
-                a sample of ICEWS data to produced aggregate values comparable to those of the ICEWS CAMEO "Goldstein" scores
+                a sample of ICEWS data to produced aggregate values comparable to those of the ICEWS CAMEO "Goldstein" scores. These are NOT current
+                some additional updates made in January-2023: see the PLOVER manual
 
 Report bugs to: schrodt735@gmail.com
 
@@ -52,6 +53,7 @@ FOUR2PLOV = {"AGRE": "AGREE",  "CONS": "CONSULT",  "SUPP": "SUPPORT",  "CONC": "
              "RETR": "RETREAT",  "REQS": "REQUEST",  "ACCS": "ACCUSE",  "REJT": "REJECT",  "THRT": "THREATEN",  "PROT": "PROTEST",   
              "SANC": "SANCTION",  "MOBL": "MOBILIZE",  "COER": "COERCE",  "ASSAULT": "ASLT"}  # PLOVER 4-character reverse index
              
+# NOTE: As of 11-Mar-2023, hese scores are NOT current with some additional updates made in January-2023: see the current PLOVER manual
 INTENSITY = {
             "ASSAULT": -9.3,
             "COERCE": -7.2,
