@@ -1,0 +1,80 @@
+code_fragments_for_NGEC_classification.txt
+
+Support code for the paper
+
+Halterman, Andrew, Philip A. Schrodt, Andreas Beger, Benjamin E. Bagozzi and 
+Grace I. Scarborough. 2023. “Creating Custom Event Data Without Dictionaries: A Bag-of-Tricks.” 
+Working paper presented at the International Studies Association, Montreal, March-2023.
+
+Last updateL 12-Mar-2023
+Contact: schrodt735@gmail.com
+
+========================================================================================
+# Transformer classifiers for event categories
+
+
+========================================================================================
+# SVM classifiers for modes and contexts
+# as noted in the paper, we've not have the resources or time to try alternatives to SVM,
+# of which there are many, and some might work better
+
+# This doesn't require a GPU though takes a half-hour or so to run multiple instances
+# for all of the models: different runs will produce different models due to the 
+# randomized train/test sampling and, presumably, some numerical maximization
+
+# training sets already have the 1:1 positive:negative balance; as noted in the paper,
+# this may not have been the best way to do things
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import SGDClassifier
+import numpy as np
+
+for line in open(os.path.join(AUXDIR, pargs.d, MODEPREFIX + catmode + ".json"), "r"): # standardized names for the training sets
+    rec =  json.loads(line[:-1])
+    textstrg, filtlist = utilNG.preprocess(rec["text"])  # insert your preprocessor here
+    if not textstrg: continue  # signals that the preprocessor has rejected the text
+    texts.append(textstrg)     # these are the training cases
+    ids.append(rec["id"])
+    labels.append(1 if rec["plmode"] == mode else 0)   # `mode` is the current mode we're estimating
+    ngot += 1
+
+if ngot < 16:
+    print("Sample size too small for ", catmode)
+    continue            
+
+try:
+    train_texts, val_texts, train_labels, val_labels, train_ids, val_ids = train_test_split(texts, labels, ids, test_size=.2)
+except:
+    print("Sample size too small for ", catmode)
+    continue
+text_clf = Pipeline([    # this call does most of the work...
+    ('vect', CountVectorizer()),
+    ('tfidf', TfidfTransformer()),
+    ('clf', SGDClassifier(loss='hinge', penalty='l2',
+                          alpha=1e-3, random_state=42,
+                          class_weight="balanced",
+                          max_iter=5, tol=None)),
+     ])
+
+text_clf.fit(train_texts, train_labels)  # though this actually estimates the model
+predicted = text_clf.predict(val_texts)  # and this gets the predictions
+
+# now compute the accuracy metrics; there might be a simpler way to do this using numpy or sklearn
+
+print(f"{catmode:24s}  {np.mean(predicted == val_labels):6.4f}   Train: {len(train_texts):6d}   Test: {len(val_texts):6d} ")
+ncorr, nTP, nFP, nFN = 0, 1, 0, 0  # nTP = 1 is a cheap trick to avoid div-by-0 (which can happen with screwy low-N models)
+for ka, prcl in enumerate(predicted):
+    if val_labels[ka] == prcl:
+        ncorr += 1
+        if prcl == 1:
+            nTP += 1
+    else:
+        if prcl == 1:
+            nFP += 1
+        else:
+            nFN += 1
+
+print("  {:8.4f}  {:8.4f}  {:8.4f}    ".format(nTP/(nTP + nFP), nTP/(nTP + nFN), nTP/(nTP + 0.5*(nFP + nFN))))
