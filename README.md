@@ -17,7 +17,9 @@ A couple more useful links:
 
 * `plovigy` family of low-footprint, terminal-based Python programs for rapid annotation: https://github.com/openeventdata/plovigy
 
-A final and alas, I-wish-were-unnecessary note: In the last few years there has developed in some parts of the event data community a most unfortunate, and certainly thoroughly unscientific, pathology of rigorously suppressing any criticism of data sets, variously using contractual non-disparangement clauses, threats of legal action, or ruthless pursuit of critics through various all-too-available mechanisms originally designed to protect scientific integrity but now used against it. I believe I speak for our entire team when I say that we welcome criticism, and if you sincerely believe this data and/or the entire exercise is the dumbest thing you've ever seen, you are welcome to express that opinion. Really.[^3]
+* An earlier complete event data pipeline, if you are looking for an example: https://github.com/openeventdata/phoenix_pipeline
+
+A final and alas, I-wish-were-unnecessary note: In the last few years there has developed in some parts of the event data community a most unfortunate, and certainly thoroughly unscientific, pathology of rigorously suppressing any criticism of data sets, variously using contractual non-disparangement clauses, threats of legal action, or ruthless pursuit of critics through various all-too-available institutional mechanisms originally designed to protect scientific integrity but now used against it. I believe I speak for our entire team when I say that we welcome criticism, and if you sincerely believe this data and/or the entire exercise is the dumbest thing you've ever seen, you are welcome to express that opinion. Really.[^3]
 
 
 ## CAMEO_codefile.txt
